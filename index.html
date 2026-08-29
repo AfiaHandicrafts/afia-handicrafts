@@ -8,28 +8,66 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Georgia', serif; background: #0d0d0d; color: #eae0c8; }
-  header { background: #000; color: #d4af37; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d4af37; }
+
+  header { background: #000; color: #d4af37; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d4af37; flex-wrap: wrap; }
   header h1 { font-size: 26px; letter-spacing: 2px; }
   nav a { color: #eae0c8; text-decoration: none; margin-left: 25px; font-size: 15px; }
   nav a:hover { color: #d4af37; }
-  .hero { background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url('https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1600') center/cover no-repeat; color: #eae0c8; text-align: center; padding: 150px 20px; }
-  .hero h2 { font-size: 44px; margin-bottom: 15px; color: #d4af37; }
-  .hero p { font-size: 18px; margin-bottom: 30px; color: #cfc4a3; }
-  .btn { background: #d4af37; color: #000; padding: 14px 34px; text-decoration: none; font-weight: bold; border-radius: 4px; }
-  .gallery { padding: 70px 40px; text-align: center; }
-  .gallery h3 { font-size: 30px; margin-bottom: 40px; color: #d4af37; }
-  .gallery-grid { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; }
-  .product-card { background: #1a1a1a; border: 1px solid #d4af37; border-radius: 6px; width: 240px; padding: 18px; text-align: left; }
+
+  /* Hero Slideshow */
+  .hero-slideshow { position: relative; height: 480px; overflow: hidden; }
+  .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.2s ease-in-out; display: flex; align-items: center; justify-content: center; text-align: center; }
+  .slide.active { opacity: 1; }
+  .slide::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); }
+  .slide-content { position: relative; z-index: 2; color: #eae0c8; padding: 20px; }
+  .slide-content h2 { font-size: 40px; color: #d4af37; margin-bottom: 12px; }
+  .slide-content p { font-size: 17px; color: #cfc4a3; margin-bottom: 20px; }
+  .btn { background: #d4af37; color: #000; padding: 14px 34px; text-decoration: none; font-weight: bold; border-radius: 4px; display: inline-block; }
+
+  .dots { position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 3; display: flex; gap: 10px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(234,224,200,0.4); cursor: pointer; border: 1px solid #d4af37; }
+  .dot.active { background: #d4af37; }
+
+  /* Product Finder */
+  .finder { padding: 50px 40px; text-align: center; background: #111; border-bottom: 1px solid #d4af37; }
+  .finder h3 { color: #d4af37; font-size: 26px; margin-bottom: 20px; }
+  .finder-options { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+  .finder-btn { background: #1a1a1a; border: 1px solid #d4af37; color: #eae0c8; padding: 12px 26px; border-radius: 30px; cursor: pointer; font-size: 15px; }
+  .finder-btn:hover, .finder-btn.selected { background: #d4af37; color: #000; }
+
+  .gallery { padding: 60px 40px; text-align: center; }
+  .gallery h3 { font-size: 28px; margin-bottom: 35px; color: #d4af37; }
+  .gallery-grid { display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; }
+  .product-card { background: #1a1a1a; border: 1px solid #d4af37; border-radius: 6px; width: 240px; padding: 18px; text-align: left; transition: transform 0.2s, box-shadow 0.2s; }
+  .product-card.highlight { box-shadow: 0 0 15px #d4af37; transform: scale(1.03); }
   .product-card img { width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 12px; }
   .product-card h4 { color: #d4af37; margin-bottom: 5px; }
   .product-card p { font-size: 13px; color: #b5aa8a; margin-bottom: 4px; }
-  .story { background: #111; color: #eae0c8; padding: 70px 40px; text-align: center; border-top: 1px solid #d4af37; border-bottom: 1px solid #d4af37; }
-  .story h3 { font-size: 30px; margin-bottom: 20px; color: #d4af37; }
+
+  .story { background: #111; padding: 60px 40px; text-align: center; border-top: 1px solid #d4af37; border-bottom: 1px solid #d4af37; }
+  .story h3 { font-size: 28px; margin-bottom: 18px; color: #d4af37; }
   .story p { max-width: 700px; margin: 0 auto; line-height: 1.8; color: #cfc4a3; }
-  .contact { padding: 70px 40px; text-align: center; }
-  .contact h3 { font-size: 30px; margin-bottom: 15px; color: #d4af37; }
+
+  .contact { padding: 60px 40px; text-align: center; }
+  .contact h3 { font-size: 28px; margin-bottom: 12px; color: #d4af37; }
   .contact a { color: #d4af37; font-weight: bold; text-decoration: none; }
-  footer { background: #000; color: #877c5f; text-align: center; padding: 22px; font-size: 14px; border-top: 1px solid #d4af37; }
+
+  footer { background: #000; color: #877c5f; text-align: center; padding: 20px; font-size: 14px; border-top: 1px solid #d4af37; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    header { padding: 15px 20px; flex-direction: column; text-align: center; }
+    nav a { margin: 0 10px; }
+    .hero-slideshow { height: 380px; }
+    .slide-content h2 { font-size: 28px; }
+    .slide-content p { font-size: 15px; }
+    .gallery, .story, .contact, .finder { padding: 40px 20px; }
+    .product-card { width: 90%; max-width: 320px; }
+  }
+  @media (max-width: 420px) {
+    .slide-content h2 { font-size: 22px; }
+    .btn { padding: 10px 22px; font-size: 14px; }
+  }
 </style>
 </head>
 <body>
@@ -43,10 +81,24 @@
   </nav>
 </header>
 
-<section class="hero">
-  <h2>Handcrafted Metal, Timeless Design</h2>
-  <p>Lamps, tables, cutlery & decor — forged by hand, built to last generations.</p>
-  <a href="#contact" class="btn">Enquire / Order Now</a>
+<section class="hero-slideshow" id="heroSlideshow">
+  <div class="slide-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:2;">
+    <h2>Handcrafted Metal, Timeless Design</h2>
+    <p>Lamps, tables, cutlery & decor — forged by hand, built to last generations.</p>
+    <a href="#contact" class="btn">Enquire / Order Now</a>
+  </div>
+  <div class="dots" id="dots"></div>
+</section>
+
+<section class="finder">
+  <h3>What are you looking for?</h3>
+  <div class="finder-options">
+    <button class="finder-btn" onclick="findProducts('Lamp')">Lamps</button>
+    <button class="finder-btn" onclick="findProducts('Table')">Tables</button>
+    <button class="finder-btn" onclick="findProducts('Cutlery')">Cutlery</button>
+    <button class="finder-btn" onclick="findProducts('Decor')">Decor</button>
+    <button class="finder-btn" onclick="findProducts('all')">Show All</button>
+  </div>
 </section>
 
 <section class="gallery" id="gallery">
@@ -70,19 +122,30 @@
 <script>
   const supabaseUrl = 'https://epdjimjsdbgzosblkofl.supabase.co';
   const supabaseKey = 'sb_publishable_h3vwDAv3NUF9af-6FuGJ6Q_oY1g68Eb';
-  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+  let allProducts = [];
+  let slideIndex = 0;
+  let slideTimer;
 
   async function loadProducts() {
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    const list = document.getElementById('productList');
-    if (!data || data.length === 0) {
-      list.innerHTML = '<p style="color:#877c5f;">No products yet — check back soon!</p>';
+    const { data } = await sb.from('products').select('*').order('created_at', { ascending: false });
+    allProducts = data || [];
+    renderProducts(allProducts);
+    setupSlideshow(allProducts);
+  }
+
+  function renderProducts(list, highlightCategory) {
+    const container = document.getElementById('productList');
+    if (!list || list.length === 0) {
+      container.innerHTML = '<p style="color:#877c5f;">No products yet — check back soon!</p>';
       return;
     }
-    list.innerHTML = '';
-    data.forEach(p => {
-      list.innerHTML += `
-        <div class="product-card">
+    container.innerHTML = '';
+    list.forEach(p => {
+      const isMatch = highlightCategory && highlightCategory !== 'all' && p.category === highlightCategory;
+      container.innerHTML += `
+        <div class="product-card ${isMatch ? 'highlight' : ''}">
           <img src="${p.image_url}" alt="${p.name}">
           <h4>${p.name}</h4>
           <p>${p.category} — ₹${p.price}</p>
@@ -92,6 +155,51 @@
       `;
     });
   }
+
+  function findProducts(category) {
+    document.querySelectorAll('.finder-btn').forEach(b => b.classList.remove('selected'));
+    event.target.classList.add('selected');
+    renderProducts(allProducts, category);
+    document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function setupSlideshow(products) {
+    const slideshow = document.getElementById('heroSlideshow');
+    const dotsContainer = document.getElementById('dots');
+    const images = products.slice(0, 5).map(p => p.image_url);
+    if (images.length === 0) {
+      images.push('https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1600');
+    }
+
+    images.forEach((img, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'slide' + (i === 0 ? ' active' : '');
+      slide.style.backgroundImage = `url('${img}')`;
+      slideshow.insertBefore(slide, slideshow.firstChild);
+
+      const dot = document.createElement('div');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
+    });
+
+    if (images.length > 1) {
+      slideTimer = setInterval(() => {
+        goToSlide((slideIndex + 1) % images.length);
+      }, 4000);
+    }
+  }
+
+  function goToSlide(i) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    slides.forEach(s => s.classList.remove('active'));
+    dots.forEach(d => d.classList.remove('active'));
+    slides[i].classList.add('active');
+    dots[i].classList.add('active');
+    slideIndex = i;
+  }
+
   loadProducts();
 </script>
 
