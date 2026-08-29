@@ -29,12 +29,12 @@
 <script>
   const supabaseUrl = 'https://epdjimjsdbgzosblkofl.supabase.co';
   const supabaseKey = 'sb_publishable_h3vwDAv3NUF9af-6FuGJ6Q_oY1g68Eb';
-  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   async function login() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
       document.getElementById('msg').innerText = "Login failed: " + error.message;
     } else {
