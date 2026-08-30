@@ -215,9 +215,39 @@
     document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
   }
 
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({length: m + 1}, () => new Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        if (a[i-1] === b[j-1]) dp[i][j] = dp[i-1][j-1];
+        else dp[i][j] = 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      }
+    }
+    return dp[m][n];
+  }
+
+  function fuzzyMatch(text, query) {
+    text = text.toLowerCase();
+    query = query.toLowerCase();
+    if (text.includes(query)) return true;
+    const words = text.split(/\s+/);
+    for (const word of words) {
+      const maxDist = query.length <= 4 ? 1 : query.length <= 8 ? 2 : 3;
+      if (levenshtein(word, query) <= maxDist) return true;
+    }
+    return false;
+  }
+
   function searchProducts(query) {
-    const q = query.toLowerCase();
-    const filtered = allProducts.filter(p => p.name.toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q));
+    if (!query.trim()) { renderProducts(allProducts); return; }
+    const filtered = allProducts.filter(p =>
+      fuzzyMatch(p.name || '', query) ||
+      fuzzyMatch(p.category || '', query) ||
+      fuzzyMatch(p.description || '', query)
+    );
     renderProducts(filtered);
   }
 
