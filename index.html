@@ -226,7 +226,7 @@
     const dotsContainer = document.getElementById('dots');
     const { data: slideData } = await sb.from('slides').select('*').order('created_at', { ascending: false });
     let images = (slideData || []).map(s => s.image_url);
-    if (images.length === 0) images = products.slice(0, 5).map(p => p.image_url);
+    if (images.length === 0) images = products.slice(0, 13).map(p => p.image_url);
 
     const fallbackImages = [
       'https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1600',
@@ -235,7 +235,7 @@
       'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=1600',
       'https://images.unsplash.com/photo-1567016432779-094069958ea5?q=80&w=1600'
     ];
-    if (images.length < 3) images = images.concat(fallbackImages).slice(0, 5);
+    if (images.length < 3) images = images.concat(fallbackImages).slice(0, 13);
 
     images.forEach((img, i) => {
       const slide = document.createElement('div');
