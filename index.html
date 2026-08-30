@@ -14,10 +14,10 @@
   nav a { color: #eae0c8; text-decoration: none; margin-left: 25px; font-size: 15px; }
   nav a:hover { color: #d4af37; }
 
-  /* Hero Slideshow */
-  .category-bar { background: #0d0d0d; border-bottom: 1px solid #d4af37; display: flex; justify-content: center; gap: 30px; padding: 12px 20px; flex-wrap: wrap; }
+  .category-bar { background: #0d0d0d; border-bottom: 1px solid #d4af37; display: flex; justify-content: center; align-items: center; gap: 25px; padding: 12px 20px; flex-wrap: wrap; }
   .category-bar a { color: #cfc4a3; text-decoration: none; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
   .category-bar a:hover { color: #d4af37; }
+  .search-box { background: #1a1a1a; border: 1px solid #d4af37; border-radius: 20px; padding: 6px 16px; color: #eae0c8; font-size: 14px; width: 180px; }
 
   .hero-slideshow { position: relative; height: 480px; overflow: hidden; }
   .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.2s ease-in-out; display: flex; align-items: center; justify-content: center; text-align: center; }
@@ -32,7 +32,6 @@
   .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(234,224,200,0.4); cursor: pointer; border: 1px solid #d4af37; }
   .dot.active { background: #d4af37; }
 
-  /* Product Finder */
   .finder { padding: 50px 40px; text-align: center; background: #111; border-bottom: 1px solid #d4af37; }
   .finder h3 { color: #d4af37; font-size: 26px; margin-bottom: 20px; }
   .finder-options { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
@@ -52,25 +51,30 @@
   .story h3 { font-size: 28px; margin-bottom: 18px; color: #d4af37; }
   .story p { max-width: 700px; margin: 0 auto; line-height: 1.8; color: #cfc4a3; }
 
+  .help-section { background: #0d0d0d; padding: 60px 40px; text-align: center; border-bottom: 1px solid #d4af37; }
+  .help-section h3 { font-size: 26px; margin-bottom: 15px; color: #d4af37; }
+  .help-section p { max-width: 650px; margin: 0 auto; line-height: 1.8; color: #cfc4a3; }
+
   .contact { padding: 60px 40px; text-align: center; }
   .contact h3 { font-size: 28px; margin-bottom: 12px; color: #d4af37; }
   .contact a { color: #d4af37; font-weight: bold; text-decoration: none; }
+  #addressText { color: #cfc4a3; margin-top: 10px; font-size: 15px; }
 
   footer { background: #000; color: #877c5f; text-align: center; padding: 20px; font-size: 14px; border-top: 1px solid #d4af37; }
 
-  /* Responsive */
+  .social-sidebar { position: fixed; left: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 2px; z-index: 100; }
+  .social-sidebar a { background: #1a1a1a; border: 1px solid #d4af37; color: #d4af37; padding: 10px 14px; font-size: 13px; text-decoration: none; border-radius: 0 6px 6px 0; }
+  .social-sidebar a:hover { background: #d4af37; color: #000; }
+
   @media (max-width: 768px) {
     header { padding: 15px 20px; flex-direction: column; text-align: center; }
     nav a { margin: 0 10px; }
     .hero-slideshow { height: 380px; }
     .slide-content h2 { font-size: 28px; }
     .slide-content p { font-size: 15px; }
-    .gallery, .story, .contact, .finder { padding: 40px 20px; }
+    .gallery, .story, .contact, .finder, .help-section { padding: 40px 20px; }
     .product-card { width: 90%; max-width: 320px; }
-  }
-  @media (max-width: 420px) {
-    .slide-content h2 { font-size: 22px; }
-    .btn { padding: 10px 22px; font-size: 14px; }
+    .social-sidebar a { padding: 8px 10px; font-size: 11px; }
   }
 </style>
 </head>
@@ -91,6 +95,7 @@
   <a onclick="findProducts('Cutlery')">Cutlery</a>
   <a onclick="findProducts('Decor')">Decor</a>
   <a onclick="findProducts('all')">All Products</a>
+  <input type="text" class="search-box" id="searchBox" placeholder="Search products..." oninput="searchProducts(this.value)">
 </nav>
 
 <section class="hero-slideshow" id="heroSlideshow">
@@ -123,6 +128,11 @@
   <p>Every piece we create is hand-forged using traditional metalworking techniques passed down through generations. From raw metal to finished product, each item carries the mark of real craftsmanship — no two pieces are ever exactly alike.</p>
 </section>
 
+<section class="help-section" id="help">
+  <h3>Help & Support</h3>
+  <p id="helpTextDisplay">Loading...</p>
+</section>
+
 <section class="contact" id="contact">
   <h3>Order & Enquiries</h3>
   <p style="max-width:650px; margin:0 auto 25px; line-height:1.8; color:#cfc4a3;">
@@ -135,9 +145,12 @@
     <p>4. Once ready, your order is shipped via courier, with Cash on Delivery (COD) available in most areas.</p>
   </div>
   <p>Call or WhatsApp us at <a href="tel:+918171788013">+91 81717 88013</a></p>
+  <p id="addressText"></p>
 </section>
 
 <footer>&copy; 2026 Afia Handicrafts. All rights reserved.</footer>
+
+<div class="social-sidebar" id="socialSidebar"></div>
 
 <script>
   const supabaseUrl = 'https://epdjimjsdbgzosblkofl.supabase.co';
@@ -164,51 +177,44 @@
     container.innerHTML = '';
     list.forEach(p => {
       const isMatch = highlightCategory && highlightCategory !== 'all' && p.category === highlightCategory;
-      container.innerHTML += `
-        <div class="product-card ${isMatch ? 'highlight' : ''}">
-          <img src="${p.image_url}" alt="${p.name}">
-          <h4>${p.name}</h4>
-          <p>${p.category} — ₹${p.price}</p>
-          <p>${p.dimensions || ''}</p>
-          <p>${p.description || ''}</p>
-        </div>
-      `;
+      container.innerHTML += `<div class="product-card ${isMatch ? 'highlight' : ''}"><img src="${p.image_url}" alt="${p.name}"><h4>${p.name}</h4><p>${p.category} — ₹${p.price}</p><p>${p.dimensions || ''}</p><p>${p.description || ''}</p></div>`;
     });
   }
 
   function findProducts(category) {
     document.querySelectorAll('.finder-btn').forEach(b => b.classList.remove('selected'));
-    event.target.classList.add('selected');
+    if (window.event && window.event.target.classList.contains('finder-btn')) window.event.target.classList.add('selected');
     renderProducts(allProducts, category);
     document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
   }
 
-  function setupSlideshow(products) {
+  function searchProducts(query) {
+    const q = query.toLowerCase();
+    const filtered = allProducts.filter(p => p.name.toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q));
+    renderProducts(filtered);
+  }
+
+  async function setupSlideshow(products) {
     const slideshow = document.getElementById('heroSlideshow');
     const dotsContainer = document.getElementById('dots');
+    const { data: slideData } = await sb.from('slides').select('*').order('created_at', { ascending: false });
+    let images = (slideData || []).map(s => s.image_url);
+    if (images.length === 0) images = products.slice(0, 5).map(p => p.image_url);
 
     const fallbackImages = [
       'https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1600',
       'https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=1600',
       'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=1600',
       'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?q=80&w=1600',
-      'https://images.unsplash.com/photo-1567016432779-094069958ea5?q=80&w=1600',
-      'https://images.unsplash.com/photo-1616627981372-9d4a4d6d4d4a?q=80&w=1600',
-      'https://images.unsplash.com/photo-1543269664-56d93c1b41a6?q=80&w=1600',
-      'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=1600'
+      'https://images.unsplash.com/photo-1567016432779-094069958ea5?q=80&w=1600'
     ];
-
-    let images = products.slice(0, 5).map(p => p.image_url);
-    if (images.length < 3) {
-      images = images.concat(fallbackImages).slice(0, 5);
-    }
+    if (images.length < 3) images = images.concat(fallbackImages).slice(0, 5);
 
     images.forEach((img, i) => {
       const slide = document.createElement('div');
       slide.className = 'slide' + (i === 0 ? ' active' : '');
       slide.style.backgroundImage = `url('${img}')`;
       slideshow.insertBefore(slide, slideshow.firstChild);
-
       const dot = document.createElement('div');
       dot.className = 'dot' + (i === 0 ? ' active' : '');
       dot.onclick = () => goToSlide(i);
@@ -216,9 +222,7 @@
     });
 
     if (images.length > 1) {
-      slideTimer = setInterval(() => {
-        goToSlide((slideIndex + 1) % images.length);
-      }, 4000);
+      slideTimer = setInterval(() => { goToSlide((slideIndex + 1) % images.length); }, 4000);
     }
   }
 
@@ -232,7 +236,29 @@
     slideIndex = i;
   }
 
+  async function loadSocialLinks() {
+    const { data } = await sb.from('social_links').select('*').order('created_at', { ascending: true });
+    const sidebar = document.getElementById('socialSidebar');
+    if (data && data.length > 0) {
+      data.forEach(l => {
+        sidebar.innerHTML += `<a href="${l.url}" target="_blank">${l.platform}</a>`;
+      });
+    }
+  }
+
+  async function loadSettings() {
+    const { data } = await sb.from('settings').select('*').limit(1).single();
+    if (data) {
+      document.getElementById('helpTextDisplay').innerText = data.help_text || '';
+      if (data.address) {
+        document.getElementById('addressText').innerText = "📍 " + data.address;
+      }
+    }
+  }
+
   loadProducts();
+  loadSocialLinks();
+  loadSettings();
 </script>
 
 </body>
