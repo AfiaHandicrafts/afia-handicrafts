@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard | Afia Handicrafts</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Georgia', serif; background: #0d0d0d; color: #eae0c8; padding: 30px; }
+  h1 { color: #d4af37; margin-bottom: 20px; }
+  .logout { float: right; background: #333; color: #eae0c8; border: 1px solid #d4af37; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+  .form-box { background: #111; border: 1px solid #d4af37; padding: 25px; border-radius: 8px; max-width: 500px; margin-bottom: 40px; }
+  .form-box h2 { color: #d4af37; margin-bottom: 15px; font-size: 20px; }
+  input, select, textarea { width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 4px; border: 1px solid #444; background: #1a1a1a; color: #eae0c8; }
+  textarea { resize: vertical; min-height: 60px; }
+  button.save-btn { background: #d4af37; color: #000; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+  button.save-btn:hover { background: #eae0c8; }
+  .product-list { display: flex; flex-wrap: wrap; gap: 20px; }
+  .product-card { background: #1a1a1a; border: 1px solid #d4af37; border-radius: 6px; width: 220px; padding: 15px; }
+  .product-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 10px; }
+  .product-card h4 { color: #d4af37; margin-bottom: 5px; }
+  .product-card p { font-size: 13px; color: #b5aa8a; margin-bottom: 5px; }
+  .delete-btn { background: #a33; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  #status { margin-top: 10px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<button class="logout" onclick="logout()">Log Out</button>
+<h1>Afia Handicrafts — Admin Dashboard</h1>
+
+<div class="form-box">
+  <h2>Add New Product</h2>
+  <input type="text" id="name" placeholder="Product name">
+  <select id="category">
+    <option value="Lamp">Lamp</option>
+    <option value="Table">Table</option>
+    <option value="Cutlery">Cutlery</option>
+    <option value="Decor">Decor</option>
+  </select>
+  <input type="number" id="price" placeholder="Price (₹)">
+  <textarea id="description" placeholder="Product description"></textarea>
+  <input type="text" id="dimensions" placeholder="Dimensions (e.g. Diameter: 12in, or Length: 20in)">
+  <input type="file" id="photo" accept="image/*">
+  <br><br>
+  <button class="save-btn" onclick="addProduct()">Save Product</button>
+  <p id="status"></p>
+</div>
+
+<h2 style="color:#d4af37; margin-bottom:15px;">Current Products</h2>
+<div class="product-list" id="productList"></div>
+
+<script>
+  const supabaseUrl = 'https://epdjimjsdbgzosblkofl.supabase.co';
+  const supabaseKey = 'sb_publishable_h3vwDAv3NUF9af-6FuGJ6Q_oY1g68Eb';
+  const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+  async function checkAuth() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = "login.html";
+    }
+  }
+  checkAuth();
+
+  function logout() {
+    sb.auth.signOut();
+    window.location.href = "login.html";
+  }
+
+  async function addProduct() {
+    const name = document.getElementById('name').value;
+    const category = document.getElementById('category').value;
+    const price = document.getElementById('price').value;
+    const description = document.getElementById('description').value;
+    const dimensions = document.getElementById('dimensions').value;
+    const photoFile = document.getElementById('photo').files[0];
+    const status = document.getElementById('status');
+
+    if (!name || !photoFile) {
+      status.innerText = "Please add a name and a photo.";
+      return;
+    }
+
+    status.innerText = "Uploading...";
+
+    const fileName = Date.now() + "_" + photoFile.name;
+    const { error: uploadError } = await sb.storage
+      .from('product-photos')
+      .upload(fileName, photoFile);
+
+    if (uploadError) {
+      status.innerText = "Photo upload failed: " + uploadError.message;
+      return;
+    }
+
+    const { data: urlData } = sb.storage
+      .from('product-photos')
+      .getPublicUrl(fileName);
+
+    const image_url = urlData.publicUrl;
+
+    const { error: insertError } = await sb
+      .from('products')
+      .insert([{ name, category, price, description, dimensions, image_url }]);
+
+    if (insertError) {
+      status.innerText = "Save failed: " + insertError.message;
+    } else {
+      status.innerText = "Product added!";
+      document.getElementById('name').value = '';
+      document.getElementById('price').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('dimensions').value = '';
+      document.getElementById('photo').value = '';
+      loadProducts();
+    }
+  }
+
+  async function loadProducts() {
+    const { data } = await sb.from('products').select('*').order('created_at', { ascending: false });
+    const list = document.getElementById('productList');
+    list.innerHTML = '';
+    if (data) {
+      data.forEach(p => {
+        list.innerHTML += `
+          <div class="product-card">
+            <img src="${p.image_url}" alt="${p.name}">
+            <h4>${p.name}</h4>
+            <p>${p.category} — ₹${p.price}</p>
+            <p>${p.dimensions || ''}</p>
+            <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
+          </div>
+        `;
+      });
+    }
+  }
+
+  async function deleteProduct(id) {
+    await sb.from('products').delete().eq('id', id);
+    loadProducts();
+  }
+
+  loadProducts();
+</script>
+
+</body>
+</html>
+
