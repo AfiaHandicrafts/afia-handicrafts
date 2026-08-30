@@ -7,22 +7,31 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Georgia', serif; background: #0d0d0d; color: #eae0c8; padding: 30px; }
-  h1 { color: #d4af37; margin-bottom: 20px; }
-  .logout { float: right; background: #333; color: #eae0c8; border: 1px solid #d4af37; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-  .form-box { background: #111; border: 1px solid #d4af37; padding: 25px; border-radius: 8px; max-width: 500px; margin-bottom: 40px; }
+  body {
+    font-family: 'Georgia', serif; color: #eae0c8; padding: 30px;
+    background: radial-gradient(circle at top left, #1a1508, #0d0d0d 60%), radial-gradient(circle at bottom right, #14110a, #000 70%);
+    min-height: 100vh;
+  }
+  h1 { color: #d4af37; margin-bottom: 20px; text-shadow: 0 0 12px rgba(212,175,55,0.4); }
+  .logout { float: right; background: #1a1a1a; color: #eae0c8; border: 1px solid #d4af37; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
+  .logout:hover { background: #d4af37; color: #000; }
+
+  .form-box { background: rgba(17,17,17,0.85); border: 1px solid #d4af37; padding: 25px; border-radius: 10px; max-width: 500px; margin-bottom: 40px; box-shadow: 0 0 25px rgba(212,175,55,0.08); backdrop-filter: blur(4px); }
   .form-box h2 { color: #d4af37; margin-bottom: 15px; font-size: 20px; }
   input, select, textarea { width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 4px; border: 1px solid #444; background: #1a1a1a; color: #eae0c8; }
   textarea { resize: vertical; min-height: 60px; }
   button.save-btn { background: #d4af37; color: #000; border: none; padding: 12px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; }
   button.save-btn:hover { background: #eae0c8; }
-  .product-list { display: flex; flex-wrap: wrap; gap: 20px; }
-  .product-card { background: #1a1a1a; border: 1px solid #d4af37; border-radius: 6px; width: 220px; padding: 15px; }
-  .product-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 10px; }
+
+  .product-list, .slide-list { display: flex; flex-wrap: wrap; gap: 20px; }
+  .product-card, .slide-card { background: #1a1a1a; border: 1px solid #d4af37; border-radius: 6px; width: 220px; padding: 15px; box-shadow: 0 0 10px rgba(212,175,55,0.06); }
+  .product-card img, .slide-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-bottom: 10px; }
   .product-card h4 { color: #d4af37; margin-bottom: 5px; }
   .product-card p { font-size: 13px; color: #b5aa8a; margin-bottom: 5px; }
   .delete-btn { background: #a33; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-  #status { margin-top: 10px; font-size: 14px; }
+  #status, #slideStatus { margin-top: 10px; font-size: 14px; }
+
+  h2.section-title { color: #d4af37; margin-bottom: 15px; text-shadow: 0 0 8px rgba(212,175,55,0.3); }
 </style>
 </head>
 <body>
@@ -35,14 +44,8 @@
   <input type="text" id="name" placeholder="Product name">
   <input type="text" id="category" list="categoryOptions" placeholder="Category (type new or pick one)">
   <datalist id="categoryOptions">
-    <option value="Lamp">
-    <option value="Table">
-    <option value="Cutlery">
-    <option value="Decor">
-    <option value="Vase">
-    <option value="Wall Art">
-    <option value="Candle Stand">
-    <option value="Kitchenware">
+    <option value="Lamp"><option value="Table"><option value="Cutlery"><option value="Decor">
+    <option value="Vase"><option value="Wall Art"><option value="Candle Stand"><option value="Kitchenware">
   </datalist>
   <input type="number" id="price" placeholder="Price (₹)">
   <textarea id="description" placeholder="Product description"></textarea>
@@ -53,7 +56,18 @@
   <p id="status"></p>
 </div>
 
-<h2 style="color:#d4af37; margin-bottom:15px;">Current Products</h2>
+<div class="form-box">
+  <h2>Manage Homepage Slideshow</h2>
+  <input type="file" id="slidePhoto" accept="image/*">
+  <br><br>
+  <button class="save-btn" onclick="addSlide()">Add Slide Image</button>
+  <p id="slideStatus"></p>
+</div>
+
+<h2 class="section-title">Current Slideshow Images</h2>
+<div class="slide-list" id="slideList" style="margin-bottom:40px;"></div>
+
+<h2 class="section-title">Current Products</h2>
 <div class="product-list" id="productList"></div>
 
 <script>
@@ -63,9 +77,7 @@
 
   async function checkAuth() {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      window.location.href = "login.html";
-    }
+    if (!session) window.location.href = "login.html";
   }
   checkAuth();
 
@@ -83,36 +95,19 @@
     const photoFile = document.getElementById('photo').files[0];
     const status = document.getElementById('status');
 
-    if (!name || !photoFile) {
-      status.innerText = "Please add a name and a photo.";
-      return;
-    }
-
+    if (!name || !photoFile) { status.innerText = "Please add a name and a photo."; return; }
     status.innerText = "Uploading...";
 
     const fileName = Date.now() + "_" + photoFile.name;
-    const { error: uploadError } = await sb.storage
-      .from('product-photos')
-      .upload(fileName, photoFile);
+    const { error: uploadError } = await sb.storage.from('product-photos').upload(fileName, photoFile);
+    if (uploadError) { status.innerText = "Photo upload failed: " + uploadError.message; return; }
 
-    if (uploadError) {
-      status.innerText = "Photo upload failed: " + uploadError.message;
-      return;
-    }
-
-    const { data: urlData } = sb.storage
-      .from('product-photos')
-      .getPublicUrl(fileName);
-
+    const { data: urlData } = sb.storage.from('product-photos').getPublicUrl(fileName);
     const image_url = urlData.publicUrl;
 
-    const { error: insertError } = await sb
-      .from('products')
-      .insert([{ name, category, price, description, dimensions, image_url }]);
-
-    if (insertError) {
-      status.innerText = "Save failed: " + insertError.message;
-    } else {
+    const { error: insertError } = await sb.from('products').insert([{ name, category, price, description, dimensions, image_url }]);
+    if (insertError) { status.innerText = "Save failed: " + insertError.message; }
+    else {
       status.innerText = "Product added!";
       document.getElementById('name').value = '';
       document.getElementById('price').value = '';
@@ -136,8 +131,7 @@
             <p>${p.category} — ₹${p.price}</p>
             <p>${p.dimensions || ''}</p>
             <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
-          </div>
-        `;
+          </div>`;
       });
     }
   }
@@ -147,9 +141,51 @@
     loadProducts();
   }
 
+  async function addSlide() {
+    const photoFile = document.getElementById('slidePhoto').files[0];
+    const status = document.getElementById('slideStatus');
+    if (!photoFile) { status.innerText = "Please choose a photo."; return; }
+    status.innerText = "Uploading...";
+
+    const fileName = "slide_" + Date.now() + "_" + photoFile.name;
+    const { error: uploadError } = await sb.storage.from('product-photos').upload(fileName, photoFile);
+    if (uploadError) { status.innerText = "Upload failed: " + uploadError.message; return; }
+
+    const { data: urlData } = sb.storage.from('product-photos').getPublicUrl(fileName);
+    const image_url = urlData.publicUrl;
+
+    const { error: insertError } = await sb.from('slides').insert([{ image_url }]);
+    if (insertError) { status.innerText = "Save failed: " + insertError.message; }
+    else {
+      status.innerText = "Slide added!";
+      document.getElementById('slidePhoto').value = '';
+      loadSlides();
+    }
+  }
+
+  async function loadSlides() {
+    const { data } = await sb.from('slides').select('*').order('created_at', { ascending: false });
+    const list = document.getElementById('slideList');
+    list.innerHTML = '';
+    if (data) {
+      data.forEach(s => {
+        list.innerHTML += `
+          <div class="slide-card">
+            <img src="${s.image_url}" alt="Slide">
+            <button class="delete-btn" onclick="deleteSlide(${s.id})">Delete</button>
+          </div>`;
+      });
+    }
+  }
+
+  async function deleteSlide(id) {
+    await sb.from('slides').delete().eq('id', id);
+    loadSlides();
+  }
+
   loadProducts();
+  loadSlides();
 </script>
 
 </body>
 </html>
-
