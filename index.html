@@ -15,6 +15,10 @@
   nav a:hover { color: #d4af37; }
 
   /* Hero Slideshow */
+  .category-bar { background: #0d0d0d; border-bottom: 1px solid #d4af37; display: flex; justify-content: center; gap: 30px; padding: 12px 20px; flex-wrap: wrap; }
+  .category-bar a { color: #cfc4a3; text-decoration: none; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
+  .category-bar a:hover { color: #d4af37; }
+
   .hero-slideshow { position: relative; height: 480px; overflow: hidden; }
   .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.2s ease-in-out; display: flex; align-items: center; justify-content: center; text-align: center; }
   .slide.active { opacity: 1; }
@@ -80,6 +84,14 @@
     <a href="#contact">Contact</a>
   </nav>
 </header>
+
+<nav class="category-bar">
+  <a onclick="findProducts('Lamp')">Lamps</a>
+  <a onclick="findProducts('Table')">Tables</a>
+  <a onclick="findProducts('Cutlery')">Cutlery</a>
+  <a onclick="findProducts('Decor')">Decor</a>
+  <a onclick="findProducts('all')">All Products</a>
+</nav>
 
 <section class="hero-slideshow" id="heroSlideshow">
   <div class="slide-content" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:2;">
