@@ -33,12 +33,17 @@
 <div class="form-box">
   <h2>Add New Product</h2>
   <input type="text" id="name" placeholder="Product name">
-  <select id="category">
-    <option value="Lamp">Lamp</option>
-    <option value="Table">Table</option>
-    <option value="Cutlery">Cutlery</option>
-    <option value="Decor">Decor</option>
-  </select>
+  <input type="text" id="category" list="categoryOptions" placeholder="Category (type new or pick one)">
+  <datalist id="categoryOptions">
+    <option value="Lamp">
+    <option value="Table">
+    <option value="Cutlery">
+    <option value="Decor">
+    <option value="Vase">
+    <option value="Wall Art">
+    <option value="Candle Stand">
+    <option value="Kitchenware">
+  </datalist>
   <input type="number" id="price" placeholder="Price (₹)">
   <textarea id="description" placeholder="Product description"></textarea>
   <input type="text" id="dimensions" placeholder="Dimensions (e.g. Diameter: 12in, or Length: 20in)">
