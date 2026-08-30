@@ -9,6 +9,16 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Georgia', serif; background: #0d0d0d; color: #eae0c8; }
 
+  .hamburger { font-size: 26px; color: #d4af37; cursor: pointer; margin-right: 15px; }
+  .menu-panel { display: none; position: fixed; top: 0; left: 0; width: 280px; height: 100%; background: #0d0d0d; border-right: 1px solid #d4af37; z-index: 200; padding: 30px 20px; overflow-y: auto; }
+  .menu-panel.open { display: block; }
+  .menu-panel h4 { color: #d4af37; margin: 20px 0 10px; font-size: 15px; text-transform: uppercase; letter-spacing: 1px; }
+  .menu-panel a { display: block; color: #eae0c8; text-decoration: none; padding: 8px 0; font-size: 15px; border-bottom: 1px solid #222; }
+  .menu-panel a:hover { color: #d4af37; }
+  .menu-close { color: #d4af37; font-size: 22px; cursor: pointer; float: right; }
+  .menu-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); z-index: 199; }
+  .menu-overlay.open { display: block; }
+
   header { background: #000; color: #d4af37; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d4af37; flex-wrap: wrap; }
   header h1 { font-size: 26px; letter-spacing: 2px; }
   nav a { color: #eae0c8; text-decoration: none; margin-left: 25px; font-size: 15px; }
@@ -81,6 +91,7 @@
 <body>
 
 <header>
+  <span class="hamburger" onclick="toggleMenu()">☰</span>
   <h1>AFIA HANDICRAFTS</h1>
   <nav>
     <a href="#gallery">Shop</a>
@@ -151,6 +162,22 @@
 <footer>&copy; 2026 Afia Handicrafts. All rights reserved.</footer>
 
 <div class="social-sidebar" id="socialSidebar"></div>
+
+<div class="menu-overlay" id="menuOverlay" onclick="toggleMenu()"></div>
+<div class="menu-panel" id="menuPanel">
+  <span class="menu-close" onclick="toggleMenu()">&times;</span>
+  <h4>Shop by Category</h4>
+  <a onclick="findProducts('Lamp'); toggleMenu();">Lamps</a>
+  <a onclick="findProducts('Table'); toggleMenu();">Tables</a>
+  <a onclick="findProducts('Cutlery'); toggleMenu();">Cutlery</a>
+  <a onclick="findProducts('Decor'); toggleMenu();">Decor</a>
+  <a onclick="findProducts('all'); toggleMenu();">All Products</a>
+  <h4>Connect With Us</h4>
+  <div id="menuSocialLinks"></div>
+  <h4>More</h4>
+  <a href="#help" onclick="toggleMenu()">Help & Support</a>
+  <a href="#contact" onclick="toggleMenu()">Contact / Order</a>
+</div>
 
 <script>
   const supabaseUrl = 'https://epdjimjsdbgzosblkofl.supabase.co';
@@ -239,10 +266,14 @@
   async function loadSocialLinks() {
     const { data } = await sb.from('social_links').select('*').order('created_at', { ascending: true });
     const sidebar = document.getElementById('socialSidebar');
+    const menuList = document.getElementById('menuSocialLinks');
     if (data && data.length > 0) {
       data.forEach(l => {
         sidebar.innerHTML += `<a href="${l.url}" target="_blank">${l.platform}</a>`;
+        menuList.innerHTML += `<a href="${l.url}" target="_blank">${l.platform}</a>`;
       });
+    } else {
+      menuList.innerHTML = '<p style="color:#877c5f; font-size:13px;">No links added yet.</p>';
     }
   }
 
@@ -254,6 +285,11 @@
         document.getElementById('addressText').innerText = "📍 " + data.address;
       }
     }
+  }
+
+  function toggleMenu() {
+    document.getElementById('menuPanel').classList.toggle('open');
+    document.getElementById('menuOverlay').classList.toggle('open');
   }
 
   loadProducts();
