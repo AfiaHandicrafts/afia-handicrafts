@@ -7,9 +7,10 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Georgia', serif; background: #0d0d0d; color: #eae0c8; overflow-x: hidden; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Georgia', serif; background: #0d0d0d; color: #eae0c8; overflow-x: hidden; width: 100%; }
 
-  header { background: #000; color: #d4af37; padding: 18px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d4af37; flex-wrap: wrap; gap: 10px; }
+  header { background: #000; color: #d4af37; padding: 18px 25px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #d4af37; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 250; }
   header h1 { font-size: 22px; letter-spacing: 2px; }
   .hamburger { font-size: 26px; color: #d4af37; cursor: pointer; }
   .header-left { display: flex; align-items: center; gap: 15px; }
@@ -21,7 +22,7 @@
   .category-bar a:hover { color: #d4af37; }
   .search-box { background: #1a1a1a; border: 1px solid #d4af37; border-radius: 20px; padding: 6px 14px; color: #eae0c8; font-size: 13px; width: 160px; max-width: 45vw; }
 
-  .hero-slideshow { position: relative; height: 55vh; min-height: 320px; max-height: 500px; overflow: hidden; }
+  .hero-slideshow { position: relative; height: 55vh; height: 55dvh; min-height: 320px; max-height: 500px; overflow: hidden; }
   .slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; opacity: 0; transition: opacity 1.2s ease-in-out; }
   .slide.active { opacity: 1; }
   .slide::before { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); }
@@ -79,6 +80,8 @@
   .menu-overlay.open { display: block; }
 
   @media (max-width: 600px) {
+    .finder-btn, .btn, button.save-btn { min-height: 44px; }
+    .category-bar a, .menu-panel a { padding-top: 6px; padding-bottom: 6px; }
     header { padding: 12px 15px; }
     header h1 { font-size: 18px; letter-spacing: 1px; }
     nav a { margin-left: 10px; font-size: 12px; }
@@ -217,6 +220,10 @@
 </div>
 
 <script>
+  if ('scrollRestoration' in history) { history.scrollRestoration = 'manual'; }
+  window.scrollTo(0, 0);
+  window.addEventListener('load', () => window.scrollTo(0, 0));
+
   const supabaseUrl = 'https://epdjimjsdbgzosblkofl.supabase.co';
   const supabaseKey = 'sb_publishable_h3vwDAv3NUF9af-6FuGJ6Q_oY1g68Eb';
   const sb = window.supabase.createClient(supabaseUrl, supabaseKey);
