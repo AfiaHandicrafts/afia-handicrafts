@@ -160,6 +160,42 @@
   <p id="addressText"></p>
 </section>
 
+<section class="help-section" id="testimonials">
+  <h3>What Our Customers Say</h3>
+  <div id="testimonialList" style="max-width:700px; margin:0 auto; text-align:left;"></div>
+</section>
+
+<section class="help-section" id="faq">
+  <h3>Frequently Asked Questions</h3>
+  <div style="max-width:700px; margin:0 auto; text-align:left; color:#cfc4a3; line-height:1.8; font-size:14px;">
+    <p style="margin-bottom:15px;"><strong style="color:#d4af37;">Q: Are your products handmade?</strong><br>Yes — every piece is hand-forged by skilled artisans, so slight variations are natural and part of the craft.</p>
+    <p style="margin-bottom:15px;"><strong style="color:#d4af37;">Q: Do you offer customization?</strong><br>Yes, we accept custom size, finish, and design requests. Contact us with your requirements.</p>
+    <p style="margin-bottom:15px;"><strong style="color:#d4af37;">Q: How do I care for metal products?</strong><br>Wipe with a dry soft cloth. Avoid harsh chemicals or prolonged moisture exposure to preserve the finish.</p>
+    <p style="margin-bottom:15px;"><strong style="color:#d4af37;">Q: What are the payment options?</strong><br>Advance payment for custom/bulk orders, with Cash on Delivery (COD) available in most areas for regular orders.</p>
+  </div>
+</section>
+
+<section class="help-section" id="policies">
+  <h3>Shipping, COD & Returns</h3>
+  <div style="max-width:700px; margin:0 auto; text-align:left; color:#cfc4a3; line-height:1.8; font-size:14px;">
+    <p style="margin-bottom:12px;"><strong style="color:#d4af37;">Shipping:</strong> Orders are shipped via courier within a few days of confirmation. Delivery timelines vary by location and customization.</p>
+    <p style="margin-bottom:12px;"><strong style="color:#d4af37;">Cash on Delivery:</strong> Available in most serviceable areas. An advance payment may be required for custom or bulk orders.</p>
+    <p style="margin-bottom:12px;"><strong style="color:#d4af37;">Returns:</strong> Please inspect your order on delivery. For damaged or incorrect items, contact us within 48 hours with photos for resolution.</p>
+  </div>
+</section>
+
+<section class="contact" id="bulkorder">
+  <h3>Bulk Order Enquiry</h3>
+  <p style="color:#cfc4a3; margin-bottom:20px;">Planning a large order? Fill this out and we'll get back to you.</p>
+  <div style="max-width:420px; margin:0 auto; text-align:left;">
+    <input type="text" id="bulkName" placeholder="Your Name" style="width:100%; padding:10px; margin-bottom:10px; border-radius:4px; border:1px solid #444; background:#1a1a1a; color:#eae0c8;">
+    <input type="text" id="bulkContact" placeholder="Phone or Email" style="width:100%; padding:10px; margin-bottom:10px; border-radius:4px; border:1px solid #444; background:#1a1a1a; color:#eae0c8;">
+    <textarea id="bulkRequirement" placeholder="What do you need? (products, quantity, timeline)" style="width:100%; padding:10px; margin-bottom:10px; border-radius:4px; border:1px solid #444; background:#1a1a1a; color:#eae0c8; min-height:70px;"></textarea>
+    <button onclick="submitBulkRequest()" style="width:100%; padding:12px; background:#d4af37; color:#000; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">Submit Request</button>
+    <p id="bulkStatus" style="margin-top:10px; font-size:13px; color:#cfc4a3;"></p>
+  </div>
+</section>
+
 <footer>&copy; 2026 Afia Handicrafts. All rights reserved.</footer>
 
 <div class="social-sidebar" id="socialSidebar"></div>
@@ -327,9 +363,36 @@
     document.getElementById('menuOverlay').classList.toggle('open');
   }
 
+  async function loadTestimonials() {
+    const { data } = await sb.from('testimonials').select('*').order('created_at', { ascending: false });
+    const list = document.getElementById('testimonialList');
+    if (!data || data.length === 0) {
+      list.innerHTML = '<p style="color:#877c5f;">No reviews yet.</p>';
+      return;
+    }
+    list.innerHTML = data.map(t => `<p style="margin-bottom:15px; color:#cfc4a3;">"${t.review_text}"<br><strong style="color:#d4af37;">— ${t.customer_name}</strong></p>`).join('');
+  }
+
+  async function submitBulkRequest() {
+    const name = document.getElementById('bulkName').value;
+    const contact = document.getElementById('bulkContact').value;
+    const requirement = document.getElementById('bulkRequirement').value;
+    const status = document.getElementById('bulkStatus');
+    if (!name || !contact || !requirement) { status.innerText = "Please fill all fields."; return; }
+    const { error } = await sb.from('bulk_requests').insert([{ name, contact, requirement }]);
+    if (error) { status.innerText = "Failed: " + error.message; }
+    else {
+      status.innerText = "Request submitted! We'll contact you soon.";
+      document.getElementById('bulkName').value = '';
+      document.getElementById('bulkContact').value = '';
+      document.getElementById('bulkRequirement').value = '';
+    }
+  }
+
   loadProducts();
   loadSocialLinks();
   loadSettings();
+  loadTestimonials();
 </script>
 
 </body>
